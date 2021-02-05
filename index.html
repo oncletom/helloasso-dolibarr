@@ -1,8 +1,95 @@
-<title>HelloAsso to Dolibarr Members/Subscriptions</title>
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>HelloAsso to Dolibarr Members/Subscriptions</title>
+    <link rel="stylesheet" href="css/bulma.css">
+    <link rel="stylesheet" href="https://bulma.io/vendor/fontawesome-free-5.15.2-web/css/all.min.css">
+  </head>
+  <body>
+    <header>
+      <nav class="navbar is-primary" role="navigation">
+        <div class="navbar-brand">
+          <a class="navbar-item" href=".">
+            HelloAsso ➡ Dolibarr
+          </a>
+        </div>
+      </nav>
+    </header>
 
-Hello <del>World</del> Asso!
+    <main class="container">
+      <section class="section">
+        <h1 class="title">HelloAsso CSV</h1>
+
+        <textarea class="textarea is-primary" id="helloasso-csv-text" placeholder="Collez le contenu du fichier CSV HelloAsso" rows="10"></textarea>
+
+        <div class="file is-centered is-boxed is-success has-name">
+          <label class="file-label">
+            <input class="file-input" type="file" accept=".csv" name="helloasso-csv-file" id="helloasso-csv-file">
+            <span class="file-cta">
+              <span class="file-icon">
+                <i class="fas fa-upload"></i>
+              </span>
+              <span class="file-label">
+                ou Upload du fichier CSV
+              </span>
+            </span>
+          </label>
+        </div>
+      </section>
+
+      <section class="section">
+        <h1 class="title">Dolibarr Members</h1>
+
+        <textarea class="textarea" id="dolibarr-members-csv" readonly placeholder="10 lines of textarea" rows="10"></textarea>
+      </section>
 
 
-<script type="module">
+      <section class="section">
+        <h1 class="title">Dolibarr Subscriptions</h1>
 
-</script>
+        <textarea class="textarea" id="dolibarr-subscriptions-csv" readonly placeholder="10 lines of textarea" rows="10"></textarea>
+      </section>
+
+    </main>
+
+    <script src="js/papaparse.js"></script>
+    <script type="module">
+      const $ = (...args) => document.querySelector(...args)
+      const $$ = (...args) => document.querySelectorAll(...args)
+
+      function onCsvReceived (data) {
+        const csv = Papa.unparse(data)
+
+        $('#helloasso-csv-text').value = csv
+
+        const { members, subscriptions } = convert(data)
+        $('#dolibarr-members-csv').value = Papa.unparse(members)
+        $('#dolibarr-subscriptions-csv').value = Papa.unparse(subscriptions)
+      }
+
+      function convert (parsedCsv) {
+        const members = {}
+        const subscriptions = {}
+
+        return { members, subscriptions }
+      }
+
+      $('#helloasso-csv-text').addEventListener('blur', (event) => {
+        const content = event.target.value
+
+        Papa.parse(content, {
+          complete: ({ data }) => onCsvReceived(data)
+        })
+      })
+
+      $('#helloasso-csv-file').addEventListener('input', (event) => {
+        const [file] = event.target.files
+
+        Papa.parse(file, {
+          encoding: 'latin1',
+          complete: ({ data }) => onCsvReceived(data)
+        })
+      })
+    </script>
+</body>
+</html>
