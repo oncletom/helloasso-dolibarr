@@ -4,6 +4,11 @@
     <title>HelloAsso to Dolibarr Members/Subscriptions</title>
     <link rel="stylesheet" href="css/bulma.css">
     <link rel="stylesheet" href="https://bulma.io/vendor/fontawesome-free-5.15.2-web/css/all.min.css">
+    <style>
+      textarea {
+        font-family: monospace;
+      }
+    </style>
   </head>
   <body>
     <header>
@@ -54,6 +59,9 @@
 
     <script src="js/papaparse.js"></script>
     <script type="module">
+      import { helloassoSubscriptionToDolibarrMember } from './js/convert.js'
+      import { helloassoSubscriptionToDolibarrSubscription } from './js/convert.js'
+
       const $ = (...args) => document.querySelector(...args)
       const $$ = (...args) => document.querySelectorAll(...args)
 
@@ -63,13 +71,13 @@
         $('#helloasso-csv-text').value = csv
 
         const { members, subscriptions } = convert(data)
-        $('#dolibarr-members-csv').value = Papa.unparse(members)
-        $('#dolibarr-subscriptions-csv').value = Papa.unparse(subscriptions)
+        $('#dolibarr-members-csv').value = Papa.unparse(members, { header: false })
+        $('#dolibarr-subscriptions-csv').value = Papa.unparse(subscriptions, { header: false })
       }
 
       function convert (parsedCsv) {
-        const members = {}
-        const subscriptions = {}
+        const members = parsedCsv.map(row => helloassoSubscriptionToDolibarrMember(row))
+        const subscriptions = parsedCsv.map(row => helloassoSubscriptionToDolibarrSubscription(row))
 
         return { members, subscriptions }
       }
@@ -78,6 +86,8 @@
         const content = event.target.value
 
         Papa.parse(content, {
+          header: true,
+          skipEmptyLines: true,
           complete: ({ data }) => onCsvReceived(data)
         })
       })
@@ -86,6 +96,8 @@
         const [file] = event.target.files
 
         Papa.parse(file, {
+          header: true,
+          skipEmptyLines: true,
           complete: ({ data }) => onCsvReceived(data)
         })
       })

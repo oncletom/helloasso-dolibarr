@@ -1,0 +1,26 @@
+{
+  "name": "helloasso-dolibarr",
+  "version": "1.0.0",
+  "description": "Convert HelloAsso campaigns CSV into a Members CSV and Subscriptions CSV.",
+  "main": "./js/convert.js",
+  "type": "module",
+  "devDependencies": {
+    "jest": "^26.6.3",
+    "serve": "^11.3.2"
+  },
+  "scripts": {
+    "start": "serve .",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/oncletom/helloasso-dolibarr.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/oncletom/helloasso-dolibarr/issues"
+  },
+  "homepage": "https://github.com/oncletom/helloasso-dolibarr#readme"
+}
