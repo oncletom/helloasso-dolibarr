@@ -86,7 +86,6 @@
         const [file] = event.target.files
 
         Papa.parse(file, {
-          encoding: 'latin1',
           complete: ({ data }) => onCsvReceived(data)
         })
       })
