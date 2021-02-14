@@ -12,9 +12,9 @@
   </head>
   <body>
     <header>
-      <nav class="navbar is-primary" role="navigation">
-        <div class="navbar-brand">
-          <a class="navbar-item" href=".">
+      <nav class="navbar is-primary level" role="navigation">
+        <div class="level-item has-text-centered navbar-brand">
+          <a class="navbar-item title" href=".">
             HelloAsso ➡ Dolibarr
           </a>
         </div>
@@ -22,39 +22,100 @@
     </header>
 
     <main class="container">
-      <section class="section">
+      <section class="section" id="helloasso-records">
         <h1 class="title">HelloAsso CSV</h1>
 
-        <textarea class="textarea is-primary" id="helloasso-csv-text" placeholder="Collez le contenu du fichier CSV HelloAsso" rows="10"></textarea>
+        <div class="block">
+          <div class="file is-medium is-primary">
+            <label class="file-label">
+              <input class="file-input" type="file" accept=".csv" name="helloasso-csv-file">
+              <span class="file-cta">
+                <span class="file-icon mr-4">
+                  <i class="fas fa-file"></i>
+                </span>
+                <span class="file-label">
+                  Sélection du fichier CSV HelloAsso
+                </span>
+              </span>
+            </label>
+          </div>
+        </div>
 
-        <div class="file is-centered is-boxed is-success has-name">
-          <label class="file-label">
-            <input class="file-input" type="file" accept=".csv" name="helloasso-csv-file" id="helloasso-csv-file">
-            <span class="file-cta">
-              <span class="file-icon">
-                <i class="fas fa-upload"></i>
-              </span>
-              <span class="file-label">
-                ou Upload du fichier CSV
-              </span>
-            </span>
-          </label>
+        <div class="block">
+          <div class="notification is-info is-light">
+            <p>
+              <i class="fas fa-user-shield fa-lg mr-2"></i>
+              Le fichier ne sera pas transmis sur Internet : toutes les opérations s'effectuent sur cette page, "hors ligne".
+            </p>
+          </div>
+        </div>
+
+        <div class="block table-container">
+          <table class="table is-striped" hidden>
+            <thead>
+
+            </thead>
+            <tbody>
+
+            </tbody>
+          </table>
         </div>
       </section>
 
-      <section class="section">
-        <h1 class="title">Dolibarr Members</h1>
+      <div class="columns">
+        <div class="column is-half">
+          <section class="section" id="dolibarr-members">
+            <h1 class="title">Dolibarr — Membres</h1>
 
-        <textarea class="textarea" id="dolibarr-members-csv" readonly placeholder="10 lines of textarea" rows="10"></textarea>
-      </section>
+            <div class="block">
+              <a disabled download="dolibarr-members.csv" type="text/csv" class="button is-large">
+                <span class="icon">
+                  <i class="fas fa-arrow-circle-down"></i>
+                </span>
 
+                <span>Télécharger</span>
+              </a>
+            </div>
 
-      <section class="section">
-        <h1 class="title">Dolibarr Subscriptions</h1>
+            <div class="block table-container">
+              <table class="table is-fullwidth is-striped" hidden>
+                <thead>
 
-        <textarea class="textarea" id="dolibarr-subscriptions-csv" readonly placeholder="10 lines of textarea" rows="10"></textarea>
-      </section>
+                </thead>
+                <tbody>
 
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+
+        <div class="column is-half">
+          <section class="section" id="dolibarr-subscriptions">
+            <h1 class="title">Dolibarr — Adhésions</h1>
+
+            <div class="block">
+              <a disabled download="dolibarr-subscriptions.csv" type="text/csv" class="button is-large">
+                <span class="icon">
+                  <i class="fas fa-arrow-circle-down"></i>
+                </span>
+                <span>Télécharger</span>
+              </a>
+            </div>
+
+            <div class="block table-container">
+              <table class="table is-fullwidth is-striped" hidden>
+                <thead>
+
+                </thead>
+                <tbody>
+
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      </div>
     </main>
 
     <script src="js/papaparse.js"></script>
@@ -66,13 +127,40 @@
       const $$ = (...args) => document.querySelectorAll(...args)
 
       function onCsvReceived (data) {
-        const csv = Papa.unparse(data)
-
-        $('#helloasso-csv-text').value = csv
-
         const { members, subscriptions } = convert(data)
-        $('#dolibarr-members-csv').value = Papa.unparse(members, { header: false })
-        $('#dolibarr-subscriptions-csv').value = Papa.unparse(subscriptions, { header: false })
+
+        // HelloAsso
+        displayObjects({ el: $('#helloasso-records table'), data, allowedHeaders: [
+          'Numéro',
+          'Montant adhésion',
+          'Nom',
+          'Prénom',
+          'Société',
+          'Date',
+          'Email',
+        ] })
+
+        // Members
+        displayObjects({ el: $('#dolibarr-members table'), data: members })
+        prepareDownload({
+          el: $('#dolibarr-members a[download]'),
+          csv: Papa.unparse(members, { header: false })
+        })
+
+        // Subscribers
+        prepareDownload({
+          el: $('#dolibarr-subscriptions a[download]'),
+          csv: Papa.unparse(subscriptions, { header: false })
+        })
+      }
+
+      function prepareDownload ({ el, csv }) {
+        const blob = new Blob([csv], { type: 'text/csv' })
+        const url = URL.createObjectURL(blob)
+
+        el.removeAttribute('disabled')
+        el.classList.add('is-primary')
+        el.setAttribute('href',  url)
       }
 
       function convert (parsedCsv) {
@@ -82,17 +170,32 @@
         return { members, subscriptions }
       }
 
-      $('#helloasso-csv-text').addEventListener('blur', (event) => {
-        const content = event.target.value
+      function displayObjects ({ el, data, allowedHeaders }) {
+        const allowedHeadersLength = Array.isArray(allowedHeaders) ? allowedHeaders.length : 0
 
-        Papa.parse(content, {
-          header: true,
-          skipEmptyLines: true,
-          complete: ({ data }) => onCsvReceived(data)
-        })
-      })
+        // Fill headers
+        const headers = Object.keys(data[0])
+          .filter(key => allowedHeadersLength === 0 || allowedHeaders.includes(key))
+          .map(key => `<th>${key}</th>`)
+          .join('')
 
-      $('#helloasso-csv-file').addEventListener('input', (event) => {
+        el.querySelector('thead').innerHTML = `<tr>${headers}</tr>`
+
+        // Fill body rows
+        el.querySelector('tbody').innerHTML = data.reduce((html, record) => {
+          const columns = Object.entries(record)
+            .filter(([key, value]) => allowedHeadersLength === 0 || allowedHeaders.includes(key))
+            .map(([key, value]) => `<td>${value}</td>`)
+            .join('')
+
+          return `${html}<tr>${columns}</tr>`
+        }, '')
+
+        // Prepare table
+        el.removeAttribute('hidden')
+      }
+
+      $('#helloasso-records input[type="file"]').addEventListener('input', (event) => {
         const [file] = event.target.files
 
         Papa.parse(file, {
